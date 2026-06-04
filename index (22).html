@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix - Watch TV Shows Online, Watch Movies Online</title>
+    <style>
+        /* Netflix Brand Design System */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #141414;
+            color: #fff;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* Profile Selection Screen */
+        .profile-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #141414;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .profile-container {
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .profile-container h1 {
+            font-size: 3.5vw;
+            font-weight: 500;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        .profile-input-box {
+            background: #333;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .profile-input-box input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .profile-input-box input::placeholder {
+            color: #8c8c8c;
+        }
+
+        .btn-profile {
+            background-color: #fff;
+            color: #000;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-profile:hover {
+            background-color: #E50914;
+            color: #fff;
+        }
+
+        /* Main Site Content */
+        .site-content {
+            display: none;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #141414;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        /* Navigation Bar */
+        header {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 10vh, rgba(0,0,0,0));
+            padding: 20px 4%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            transition: background-color 0.5s;
+        }
+
+        header.scrolled {
+            background-color: #141414;
+        }
+
+        .left-nav {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .logo {
+            color: #E50914;
+            font-size: 26px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-link {
+            color: #e5e5e5;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #b3b3b3;
+        }
+
+        .user-profile-tag {
+            font-size: 14px;
+            color: #fff;
+            font-weight: bold;
+            border-left: 2px solid #E50914;
+            padding-left: 10px;
+        }
+
+        /* Billboard Feature Movie */
+        .billboard {
+            height: 85vh;
+            position: relative;
+            background: linear-gradient(to right, rgba(20,20,20,0.9) 20%, rgba(20,20,20,0.3) 50%, rgba(20,20,20,0)), 
+                        url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1920&auto=format&fit=crop') center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 4%;
+            cursor: pointer;
+        }
+
+        .billboard-content {
+            max-width: 45%;
+            z-index: 2;
+        }
+
+        .billboard-title {
+            font-size: 4vw;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+
+        .billboard-desc {
+            font-size: 1.1vw;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.45);
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+
+        .billboard-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 24px;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s;
+        }
+
+        .btn-play { background-color: white; color: black; }
+        .btn-info { background-color: rgba(109, 109, 110, 0.7); color: white; }
+        .btn:hover { opacity: 0.75; }
+
+        /* Rows Setup */
+        .main-container {
+            position: relative;
+            z-index: 10;
+            margin-top: -80px;
+            padding-bottom: 50px;
+            background: linear-gradient(to bottom, rgba(20,20,20,0) 0%, rgba(20,20,20,1) 8%);
+        }
+
+        .movie-row {
+            padding: 25px 4% 0 4%;
+        }
+
+        .row-title {
+            font-size: 1.4vw;
+            color: #e5e5e5;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .row-cards {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Netflix Hover Scaling System */
+        .card {
+            position: relative;
+            background-color: #181818;
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), z-index 0.4s;
+            aspect-ratio: 16/9;
+        }
+
+        .card:hover {
+            transform: scale(1.3) translateY(-30px);
+            z-index: 50;
+            box-shadow: 0px 15px 30px rgba(0,0,0,0.7);
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: height 0.3s;
+        }
+
+        .card-metadata {
+            display: none;
+            padding: 12px;
+            background-color: #181818;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .card:hover .card-img { height: 45%; }
+        .card:hover .card-metadata { display: block; height: 55%; }
+
+        .meta-title {
+            font-size: 12px;
+            color: #fff;
+            font-weight: bold;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .meta-info-line {
+            font-size: 10px;
+            color: #a3a3a3;
+            margin-bottom: 6px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .badge-rating {
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 0 4px;
+            font-size: 9px;
+            border-radius: 2px;
+            color: #fff;
+        }
+
+        .meta-desc {
+            font-size: 9px;
+            color: #d2d2d2;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.3;
+        }
+
+        .meta-tags {
+            font-size: 8px;
+            color: #808080;
+            margin-top: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Player Overlay */
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            z-index: 2500;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .video-box { width: 100%; max-width: 900px; aspect-ratio: 16/9; }
+        video { width: 100%; height: 100%; outline: none; }
+
+        /* The Personalized Anti-Piracy Trap Screen */
+        .notice-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #0d0d0d;
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Red Flash Shock Effect */
+        .notice-overlay.flash-shock {
+            animation: red-flash 0.5s ease-out;
+        }
+
+        .notice-card {
+            max-width: 650px;
+            background-color: #181818;
+            border-top: 6px solid #E50914;
+            padding: 40px;
+            border-radius: 6px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.9);
+        }
+
+        /* Violent Jarring Shake Effect */
+        .notice-card.shake-heavy {
+            animation: violent-shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+            transform: translate3d(0, 0, 0);
+        }
+
+        .notice-card h1 {
+            color: #E50914;
+            font-size: 26px;
+            margin-bottom: 15px;
+        }
+
+        .notice-card p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #cccccc;
+            margin-bottom: 15px;
+        }
+
+        .notice-card ul {
+            margin-left: 20px;
+            margin-bottom: 20px;
+            color: #999;
+            font-size: 13px;
+        }
+
+        .notice-card li { margin-bottom: 8px; }
+        .btn-redirect {
+            display: inline-block;
+            background-color: #E50914;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* High Intensity Keyframe Definitions */
+        @keyframes red-flash {
+            0% { background-color: #E50914; }
+            40% { background-color: #ff0000; }
+            100% { background-color: #0d0d0d; }
+        }
+
+        @keyframes violent-shake {
+            10%, 90% { transform: translate3d(-3px, 0, 0) scale(1.02); }
+            20%, 80% { transform: translate3d(5px, -2px, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 3px, 0) scale(0.98); }
+            40%, 60% { transform: translate3d(6px, -1px, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="profile-screen" id="profileGate">
+        <div class="profile-container">
+            <h1>Who's watching?</h1>
+            <div class="profile-input-box">
+                <input type="text" id="userNameInput" placeholder="Enter Your Name" maxlength="20" autocomplete="off">
+            </div>
+            <button class="btn-profile" onclick="initializeSite()">Sign In</button>
+        </div>
+    </div>
+
+    <div class="site-content" id="mainSite">
+        <header id="navbar">
+            <div class="left-nav">
+                <div class="logo">Netfix</div>
+                <div class="nav-links">
+                    <span class="nav-link active">Home</span>
+                    <span class="nav-link">TV Shows</span>
+                    <span class="nav-link">Movies</span>
+                    <span class="nav-link">New & Popular</span>
+                </div>
+            </div>
+            <div class="user-profile-tag" id="navProfileName">Guest</div>
+        </header>
+
+        <section class="billboard" onclick="triggerMeme()">
+            <div class="billboard-content">
+                <div class="billboard-title">Michael Jackson movie</div>
+                <div class="billboard-desc">A compilation of interviews, rehearsals, and backstage footage of Michael Jackson as he meticulously prepared for his series of sold-out concert performances in London.</div>
+                <div class="billboard-buttons">
+                    <button class="btn btn-play">► Play Now</button>
+                    <button class="btn btn-info">ⓘ More Info</button>
+                </div>
+            </div>
+        </section>
+
+        <div class="main-container">
+
+            <div class="movie-row">
+                <div class="row-title">Trending Now</div>
+                <div class="row-cards">
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">The Dark Knight</div>
+                            <div class="meta-info-line"><span>2008</span> <span class="badge-rating">PG-13</span> <span>2h 32m</span></div>
+                            <div class="meta-desc">When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.</div>
+                            <div class="meta-tags">Dark • Action • Thriller</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Inception</div>
+                            <div class="meta-info-line"><span>2010</span> <span class="badge-rating">PG-13</span> <span>2h 28m</span></div>
+                            <div class="meta-desc">A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.</div>
+                            <div class="meta-tags">Mind-Bending • Sci-Fi • Thriller</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Interstellar</div>
+                            <div class="meta-info-line"><span>2014</span> <span class="badge-rating">PG-13</span> <span>2h 49m</span></div>
+                            <div class="meta-desc">When Earth becomes uninhabitable, a team of explorers travels through a wormhole in space in an attempt to ensure humanity's survival.</div>
+                            <div class="meta-tags">Cerebral • Space • Emotional</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Dune: Part Two</div>
+                            <div class="meta-info-line"><span>2024</span> <span class="badge-rating">PG-13</span> <span>2h 46m</span></div>
+                            <div class="meta-desc">Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.</div>
+                            <div class="meta-tags">Sci-Fi • Epic • Adventure</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1635805737707-575885ab0820?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Spider-Man: Across the Spider-Verse</div>
+                            <div class="meta-info-line"><span>2023</span> <span class="badge-rating">PG</span> <span>2h 20m</span></div>
+                            <div class="meta-desc">Miles Morales catapults across the Multiverse, where he encounters a team of Spider-People charged with protecting its very existence.</div>
+                            <div class="meta-tags">Animation • Action • Superhero</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Everything Everywhere All at Once</div>
+                            <div class="meta-info-line"><span>2022</span> <span class="badge-rating">R</span> <span>2h 19m</span></div>
+                            <div class="meta-desc">A middle-aged Chinese immigrant is swept up into an insane adventure in which she alone can save existence by exploring other universes.</div>
+                            <div class="meta-tags">Multiverse • Comedy • Sci-Fi</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="movie-row">
+                <div class="row-title">Binge-worthy TV Shows</div>
+                <div class="row-cards">
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Stranger Things</div>
+                            <div class="meta-info-line"><span>2025</span> <span class="badge-rating">TV-14</span> <span>4 Seasons</span></div>
+                            <div class="meta-desc">When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces and one strange little girl.</div>
+                            <div class="meta-tags">Nostalgic • Sci-Fi Drama • Horror</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Breaking Bad</div>
+                            <div class="meta-info-line"><span>2013</span> <span class="badge-rating">TV-MA</span> <span>5 Seasons</span></div>
+                            <div class="meta-desc">A chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine with a former student in order to secure his family's future.</div>
+                            <div class="meta-tags">Gritty • Crime • Drama Thriller</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">The Witcher</div>
+                            <div class="meta-info-line"><span>2023</span> <span class="badge-rating">TV-MA</span> <span>3 Seasons</span></div>
+                            <div class="meta-desc">Geralt of Rivia, a mutated monster-hunter for hire, journeys toward his destiny in a turbulent world where people often prove more wicked than beasts.</div>
+                            <div class="meta-tags">Epic • Fantasy • Action Adventure</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Squid Game</div>
+                            <div class="meta-info-line"><span>2024</span> <span class="badge-rating">TV-MA</span> <span>2 Seasons</span></div>
+                            <div class="meta-desc">Hundreds of cash-strapped players accept a strange invitation to compete in children's games. Inside, a tempting prize awaits with deadly high stakes.</div>
+                            <div class="meta-tags">Suspenseful • Drama • Psychological Thriller</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Black Mirror</div>
+                            <div class="meta-info-line"><span>2023</span> <span class="badge-rating">TV-MA</span> <span>6 Seasons</span></div>
+                            <div class="meta-desc">An anthology series exploring a twisted, high-tech multiverse where humanity's greatest innovations and darkest instincts collide.</div>
+                            <div class="meta-tags">Mind-Bending • Sci-Fi Anthology • Satire</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Cyberpunk: Edgerunners</div>
+                            <div class="meta-info-line"><span>2022</span> <span class="badge-rating">TV-MA</span> <span>1 Season</span></div>
+                            <div class="meta-desc">A street kid trying to survive in a technology and body modification-obsessed city of the future loses everything and chooses to stay alive by becoming an edgerunner.</div>
+                            <div class="meta-tags">Anime • Cyberpunk • Sci-Fi Action</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="movie-row">
+                <div class="row-title">Suspenseful Thrillers</div>
+                <div class="row-cards">
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Gladiator</div>
+                            <div class="meta-info-line"><span>2000</span> <span class="badge-rating">R</span> <span>2h 35m</span></div>
+                            <div class="meta-desc">A former Roman General sets out to exact vengeance against the corrupt emperor who murdered his family and sent him into slavery.</div>
+                            <div class="meta-tags">Historic • Revenge • Action</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">The Matrix</div>
+                            <div class="meta-info-line"><span>1999</span> <span class="badge-rating">R</span> <span>2h 16m</span></div>
+                            <div class="meta-desc">When a beautiful stranger leads computer hacker Neo to a forbidding underworld, he discovers the shocking truth about his reality.</div>
+                            <div class="meta-tags">Cyberpunk • Sci-Fi • Action</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1512149177596-f817c7ef5d4c?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Knives Out</div>
+                            <div class="meta-info-line"><span>2019</span> <span class="badge-rating">PG-13</span> <span>2h 10m</span></div>
+                            <div class="meta-desc">A master detective investigates the unexpected and suspicious death of the patriarch of an eccentric, combative family.</div>
+                            <div class="meta-tags">Mystery • Whodunit • Comedy</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Get Out</div>
+                            <div class="meta-info-line"><span>2017</span> <span class="badge-rating">R</span> <span>1h 44m</span></div>
+                            <div class="meta-desc">A young African-American visits his white girlfriend's parents for the weekend, uncovering a dark, horrific hidden reality.</div>
+                            <div class="meta-tags">Psychological • Horror • Thriller</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Whiplash</div>
+                            <div class="meta-info-line"><span>2014</span> <span class="badge-rating">R</span> <span>1h 46m</span></div>
+                            <div class="meta-desc">A promising young drummer enrolls at a cut-throat music conservatory where his dreams of greatness are pushed to extreme limits by an instructor.</div>
+                            <div class="meta-tags">Drama • Music • Intense</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Parasite</div>
+                            <div class="meta-info-line"><span>2019</span> <span class="badge-rating">R</span> <span>2h 12m</span></div>
+                            <div class="meta-desc">Greed and class discrimination threaten the newly formed symbiotic relationship between the wealthy Park family and the destitute Kim clan.</div>
+                            <div class="meta-tags">Drama • Dark Comedy • Thriller</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="movie-row">
+                <div class="row-title">Music & Documentaries</div>
+                <div class="row-cards">
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1460881680858-30d872d5b530?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Michael Jackson: This Is It</div>
+                            <div class="meta-info-line"><span>2009</span> <span class="badge-rating">PG</span> <span>1h 51m</span></div>
+                            <div class="meta-desc">The primary, raw backup footage captured right before Michael Jackson's unexpected departure prior to his planned London event series.</div>
+                            <div class="meta-tags">Documentary • Music • Biography</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1608889174637-3c44f6326f20?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Superbad</div>
+                            <div class="meta-info-line"><span>2007</span> <span class="badge-rating">R</span> <span>1h 53m</span></div>
+                            <div class="meta-desc">Two co-dependent high school seniors are forced to deal with separation anxiety after their plan to stage a booze-fueled party goes awry.</div>
+                            <div class="meta-tags">Comedy • Coming of Age • Raunchy</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Spirited Away</div>
+                            <div class="meta-info-line"><span>2001</span> <span class="badge-rating">PG</span> <span>2h 5m</span></div>
+                            <div class="meta-desc">During her family's move to the suburbs, a sullen 10-year-old girl wanders into a world ruled by gods, witches, and spirits.</div>
+                            <div class="meta-tags">Anime • Studio Ghibli • Fantasy</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">The Truman Show</div>
+                            <div class="meta-info-line"><span>1998</span> <span class="badge-rating">PG</span> <span>1h 43m</span></div>
+                            <div class="meta-desc">An insurance salesman discovers his whole life is actually a meticulously constructed reality TV show broadcasted to the entire world.</div>
+                            <div class="meta-tags">Drama • Satire • Psychological</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="translateValue()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Blade Runner 2049</div>
+                            <div class="meta-info-line"><span>2017</span> <span class="badge-rating">R</span> <span>2h 44m</span></div>
+                            <div class="meta-desc">A new blade runner, LAPD Officer K, unearths a long-buried secret that has the potential to plunge what's left of society into absolute chaos.</div>
+                            <div class="meta-tags">Sci-Fi • Dystopian • Cyberpunk</div>
+                        </div>
+                    </div>
+                    <div class="card" onclick="triggerMeme()">
+                        <img class="card-img" src="https://images.unsplash.com/photo-1569003339405-ea396a5a8a90?q=80&w=400">
+                        <div class="card-metadata">
+                            <div class="meta-title">Jurassic Park</div>
+                            <div class="meta-info-line"><span>1993</span> <span class="badge-rating">PG-13</span> <span>2h 7m</span></div>
+                            <div class="meta-desc">A pragmatic paleontologist touring an almost complete theme park on an island is tasked with protecting kids after cloned dinosaurs run loose.</div>
+                            <div class="meta-tags">Sci-Fi • Adventure • Classic</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="video-overlay" id="videoOverlay">
+        <div class="video-box">
+            <video id="memeVideo" controls>
+                <source src="Stop it gets some help.mp4" type="video/mp4">
+                Your browser does not support standard video objects.
+            </video>
+        </div>
+    </div>
+
+    <audio id="alertSound" preload="auto">
+        <source src="alarm.mp4" type="audio/mpeg">
+    </audio>
+
+    <div class="notice-overlay" id="noticeOverlay">
+        <div class="notice-card" id="noticeCard">
+            <h1>⚠️ COPYRIGHT INFRINGEMENT WARNING</h1>
+            <p id="noticeGreeting">
+                <strong>Gotcha, <span id="noticeName" style="color: #fff; font-weight: bold; text-decoration: underline;">User</span>!</strong> You won't find stolen media streaming pipelines on this directory link. 
+            </p>
+            <p>
+                While consuming unlicensed streaming resources feels convenient on the surface, deploying, hosting, building, or intentionally utilizing unauthorized pirated frameworks directly violates international copyright protections and civil laws.
+            </p>
+            <p><strong>Critical Legal & Security Insights:</strong></p>
+            <ul>
+                <li><strong>Distribution Liabilities:</strong> Creating or managing infrastructure that provides unauthorized access to copyright-protected property exposes operators to severe statutory penalties up to $150,000 per asset.</li>
+                <li><strong>Security Infrastructure Vulnerabilities:</strong> Pirated indices serve as prime deployment vectors for persistent tracking scripts, cross-site scripting cookies, silent malware injections, and hidden hardware configurations.</li>
+                <li><strong>Creator Protection:</strong> Maintaining valid consumption standard models helps ensure financial backing moves downstream directly to software architects, camera personnel, digital effects animators, and design artists.</li>
+            </ul>
+            <p>Avoid configuration vulnerabilities and protect your internal system parameters by relying on legal, authenticated streaming systems.</p>
+            <a href="https://www.copyright.gov/what-is-copyright/" target="_blank" class="btn-redirect">Review Official Copyright Protections</a>
+        </div>
+    </div>
+
+    <script>
+        let userName = "Guest";
+
+        // Gate initialization logic
+        function initializeSite() {
+            const inputField = document.getElementById('userNameInput');
+            if(inputField.value.trim() !== "") {
+                userName = inputField.value.trim();
+            }
+            
+            // Set initial name strings throughout DOM elements
+            document.getElementById('navProfileName').innerText = userName;
+            document.getElementById('noticeName').innerText = userName;
+            
+            // Hide gate screen, deploy platform mockup
+            document.getElementById('profileGate').style.display = 'none';
+            document.getElementById('mainSite').style.display = 'block';
+        }
+
+        // Adjust Header Background Opacity on Scroll
+        const navbar = document.getElementById('navbar');
+        window.onscroll = function() {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        };
+
+        const videoOverlay = document.getElementById('videoOverlay');
+        const noticeOverlay = document.getElementById('noticeOverlay');
+        const noticeCard = document.getElementById('noticeCard');
+        const memeVideo = document.getElementById('memeVideo');
+        const alertSound = document.getElementById('alertSound');
+        const noticeGreeting = document.getElementById('noticeGreeting');
+
+        // Play the Michael Jordan "Stop It" PSA
+        function triggerMeme() {
+            videoOverlay.style.display = 'flex';
+            memeVideo.play().catch(err => {
+                console.log("Autoplay paused. User interaction required.");
+            });
+        }
+
+        // Transition from the video directly to the high-intensity warning screen
+        memeVideo.onended = function() {
+            videoOverlay.style.display = 'none';
+            
+            // Checking if the persistent flag is present in client storage
+            const hasBeenTrappedBefore = localStorage.getItem('trappedFlag');
+
+            if (hasBeenTrappedBefore) {
+                // Returnee detected: inject personalized message modifications
+                noticeGreeting.innerHTML = `<strong>You haven't changed, have you, <span style="color: #fff; font-weight: bold; text-decoration: underline;">${userName}</span>?</strong> You won't find stolen media streaming pipelines here.`;
+            } else {
+                // First time visitor: establish baseline message and set flag for future visits
+                noticeGreeting.innerHTML = `<strong>Gotcha, <span style="color: #fff; font-weight: bold; text-decoration: underline;">${userName}</span>!</strong> You won't find stolen media streaming pipelines on this directory link.`;
+                localStorage.setItem('trappedFlag', 'true');
+            }
+            
+            // Mount the screen with shock animations attached
+            noticeOverlay.style.display = 'flex';
+            noticeOverlay.classList.add('flash-shock');
+            noticeCard.classList.add('shake-heavy');
+            
+            // Fires your alarm sound asset instantly
+            alertSound.play().catch(err => {
+                console.log("Audio block prevented immediate playback.");
+            });
+
+            // Strip animations after run-through so they can be re-triggered if needed
+            setTimeout(() => {
+                noticeOverlay.classList.remove('flash-shock');
+                noticeCard.classList.remove('shake-heavy');
+            }, 600);
+        };
+    </script>
+</body>
+</html>
